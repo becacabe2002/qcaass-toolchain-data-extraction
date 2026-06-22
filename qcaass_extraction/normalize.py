@@ -48,14 +48,16 @@ def canonicalize(text: str) -> str:
 def match_key(text: str) -> str:
     """Aggressive normalization for substring matching (validation only).
 
-    Lowercase, strip punctuation/smart-quote variants, collapse all
-    whitespace. Used identically on both the quote and the source.
+    Lowercase, strip punctuation/smart-quote variants, and remove all
+    whitespace. The key is whitespace-free so substring search is insensitive
+    to line-break/word-wrap artifacts (e.g. a word split mid-token across a PDF
+    line break, ``oper\\nation`` -> ``operation``). Used identically on both the
+    quote and the source.
     """
     text = unicodedata.normalize("NFC", text).translate(_TRANS_TABLE)
     text = text.lower()
     text = _PUNCT.sub(" ", text)
-    text = _WS.sub(" ", text)
-    return text.strip()
+    return _WS.sub("", text)
 
 
 def word_count(text: str) -> int:

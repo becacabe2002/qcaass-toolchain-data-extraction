@@ -8,9 +8,11 @@ empty default is written, and the failure is recorded in `parse_failures`
 
 from __future__ import annotations
 
+from .config import CATEGORIES
 from .models import get_strong_model
 from .prompts import (
     CATEGORY_INSTRUCTIONS,
+    MERGED_INSTRUCTION,
     STRICT_RETRY_SUFFIX,
     STRONG_SYSTEM_GUARDRAILS,
 )
@@ -18,6 +20,7 @@ from .schema import (
     AlgorithmsSection,
     Architecture,
     ChallengesSection,
+    FullExtraction,
     GeneralAndOverview,
     empty_algorithms,
     empty_architecture,
@@ -31,6 +34,55 @@ from .state import ExtractionState
 def _spans_text(state: ExtractionState, category: str) -> str:
     spans = state.get("located_spans", {}).get(category, [])
     return "\n\n".join(spans)
+
+
+def _merged_spans_text(state: ExtractionState) -> str:
+    """Union of every category's spans, de-duplicated, in first-seen order.
+
+    The merged call needs all spans at once. Short-doc bypass populates each
+    category with the same canonical text, so de-duplication collapses that to
+    a single copy instead of repeating the whole document five times.
+    """
+    located = state.get("located_spans", {}) or {}
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for cat in CATEGORIES:
+        for span in located.get(cat, []):
+            if span not in seen:
+                seen.add(span)
+                ordered.append(span)
+    return "\n\n".join(ordered)
+
+
+def extract_merged(state: ExtractionState) -> dict:
+    """Default path: one structured-output call returns the whole record.
+
+    On parse failure every category gets a safe empty default plus a recorded
+    ``parse_failures`` reason, so the validator routes each into its focused
+    fallback extractor.
+    """
+    spans = _merged_spans_text(state)
+    try:
+        res: FullExtraction = _run_structured(
+            FullExtraction, MERGED_INSTRUCTION, spans, retry=False
+        )
+        return {
+            "general": res.general,
+            "overview": res.overview,
+            "architecture": res.architecture,
+            "algorithms": res.algorithms,
+            "challenges": res.challenges,
+            "parse_failures": {cat: "" for cat in CATEGORIES},
+        }
+    except Exception as exc:  # noqa: BLE001 - parse-failure containment
+        return {
+            "general": empty_general(),
+            "overview": empty_overview(),
+            "architecture": empty_architecture(),
+            "algorithms": empty_algorithms(),
+            "challenges": empty_challenges(),
+            "parse_failures": {cat: str(exc) for cat in CATEGORIES},
+        }
 
 
 def _is_retry(state: ExtractionState, category: str) -> bool:

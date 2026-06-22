@@ -15,6 +15,15 @@ from .state import ExtractionState
 _PARA_WINDOW_CHARS = 400
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
 
+# Below this many words of extracted text a document is treated as a failed
+# load (likely a scanned/image-only PDF or a corrupt file) rather than fed to
+# the model — extracting from near-nothing silently produces false "Not stated".
+_MIN_DOC_WORDS = 50
+
+
+class EmptyExtractionError(ValueError):
+    """Raised when a document yields too little text to extract from."""
+
 
 def estimate_tokens(text: str) -> int:
     """Cheap token estimate. Uses tiktoken when available, else ~4 chars/token."""
@@ -75,8 +84,17 @@ def split_paragraphs(text: str) -> list[str]:
 
 
 def load_doc(state: ExtractionState) -> dict:
-    raw = extract_text(state["source_doc_path"])
+    path = state["source_doc_path"]
+    try:
+        raw = extract_text(path)
+    except Exception as exc:  # noqa: BLE001 - surface parse errors as a failed load
+        raise EmptyExtractionError(f"could not read {path}: {exc}") from exc
     canonical = canonicalize(raw)
+    if len(canonical.split()) < _MIN_DOC_WORDS:
+        raise EmptyExtractionError(
+            f"only {len(canonical.split())} words extracted from {path} "
+            "(scanned/image PDF or corrupt file?)"
+        )
     paragraphs = split_paragraphs(canonical)
     token_count = estimate_tokens(canonical)
 

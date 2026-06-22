@@ -14,7 +14,8 @@ from .state import ExtractionState
 
 
 def assemble(state: ExtractionState) -> dict:
-    needs_review = bool(state.get("validation_errors"))
+    errors = state.get("validation_errors") or []
+    needs_review = bool(errors)
     record = ToolRecord(
         tool_id=state["tool_id"],
         source_doc_path=state["source_doc_path"],
@@ -24,5 +25,6 @@ def assemble(state: ExtractionState) -> dict:
         algorithms=state.get("algorithms") or empty_algorithms(),
         challenges=state.get("challenges") or empty_challenges(),
         needs_review=needs_review,
+        validation_errors=errors,
     )
     return {"record": record}

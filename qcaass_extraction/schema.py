@@ -153,6 +153,20 @@ class ToolRecord(BaseModel):
     algorithms: AlgorithmsSection
     challenges: ChallengesSection
     needs_review: bool = False  # set if the validator escalated any field
+    validation_errors: list[dict] = Field(default_factory=list)
+
+
+# ---------- Merged single-call extraction target ----------
+# One structured-output call returns the whole record's category payload; the
+# four-way fan-out is kept only as the per-category fallback (see extractors).
+
+
+class FullExtraction(BaseModel):
+    general: GeneralInfo
+    overview: OverviewCharacteristics
+    architecture: Architecture
+    algorithms: AlgorithmsSection
+    challenges: ChallengesSection
 
 
 # ---------- Safe empty defaults (used on parse failure) ----------

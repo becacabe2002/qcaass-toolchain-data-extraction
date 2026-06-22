@@ -74,6 +74,20 @@ def flatten_challenge_rows(r: ToolRecord) -> list[dict]:
     ]
 
 
+def flatten_error_rows(r: ToolRecord) -> list[dict]:
+    """Sheet 4 `validation_errors`: one row per failure."""
+    return [
+        {
+            "tool_id": r.tool_id,
+            "field_path": e.get("field_path"),
+            "value": str(e.get("value")),
+            "quote": e.get("quote"),
+            "reason": e.get("reason"),
+        }
+        for e in r.validation_errors
+    ]
+
+
 # Stable column order so empty DataFrames still render the expected headers.
 _TOOLS_COLUMNS = (
     ["tool_id", "source_doc_path", "tool_name", "purpose",
@@ -90,6 +104,7 @@ _TOOLS_COLUMNS = (
 _ALGO_COLUMNS = ["tool_id", "algorithm_name", "algorithm_type", "evidence"]
 _CHAL_COLUMNS = ["tool_id", "statement", "category", "category_evidence",
                  "evidence_strength", "strength_evidence"]
+_ERROR_COLUMNS = ["tool_id", "field_path", "value", "quote", "reason"]
 
 
 def _frame(rows: list[dict], columns: list[str]) -> pd.DataFrame:
@@ -98,11 +113,12 @@ def _frame(rows: list[dict], columns: list[str]) -> pd.DataFrame:
 
 def write_workbook(records: list[ToolRecord], path: str) -> None:
     """Write the whole workbook once via an atomic temp-file swap."""
-    tools_rows, algo_rows, chal_rows = [], [], []
+    tools_rows, algo_rows, chal_rows, error_rows = [], [], [], []
     for r in records:
         tools_rows.append(flatten_tool_row(r))
         algo_rows.extend(flatten_algo_rows(r))
         chal_rows.extend(flatten_challenge_rows(r))
+        error_rows.extend(flatten_error_rows(r))
 
     # Keep an .xlsx suffix so pandas/openpyxl accepts the temp file's extension.
     tmp = path + ".tmp.xlsx"
@@ -110,4 +126,5 @@ def write_workbook(records: list[ToolRecord], path: str) -> None:
         _frame(tools_rows, _TOOLS_COLUMNS).to_excel(xw, sheet_name="tools", index=False)
         _frame(algo_rows, _ALGO_COLUMNS).to_excel(xw, sheet_name="algorithms", index=False)
         _frame(chal_rows, _CHAL_COLUMNS).to_excel(xw, sheet_name="challenges", index=False)
+        _frame(error_rows, _ERROR_COLUMNS).to_excel(xw, sheet_name="validation_errors", index=False)
     os.replace(tmp, path)  # atomic on POSIX, near-atomic on Windows

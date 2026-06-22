@@ -36,12 +36,10 @@ toolchain document. Follow these rules without exception:
 - Quotes should be short — one sentence or one clause, not paragraphs.
 - If no verbatim quote supports a coded value, set the value to "Not stated"
   and leave evidence empty. DO NOT fabricate quotes.
-- Distinguish carefully between No and Not stated:
-  - Yes — verbatim quote affirming the feature exists.
-  - No — quote that explicitly negates the feature, or quote showing the topic
-    area IS discussed but this specific capability is absent.
-  - Not stated — the document does not engage with the topic area at all;
-    evidence empty.
+- Distinguish carefully between Yes, No, and Not stated:
+  - Yes — verbatim quote showing they talk about and cover the feature/module, even partially.
+  - No — verbatim quote showing they explicitly say they do not have this feature/module (for example, in a limitations or challenges section).
+  - Not stated — the document does not talk about or engage with the feature/module at all; evidence empty.
 """
 
 STRICT_RETRY_SUFFIX = """
@@ -51,6 +49,13 @@ substrings of the source. Re-extract this category. Every `evidence` quote MUST
 be copied character-for-character from the spans below. If you cannot find an
 exact supporting quote, use "Not stated" with empty evidence rather than
 paraphrasing. Absolutely no paraphrase.
+"""
+
+MERGED_HEADER = """Extract ALL of the following categories from the document in a
+single pass: general information, overview characteristics, architectural and
+technical features, quantum algorithms, and challenges. Apply each category's
+rules exactly as written below.
+
 """
 
 # Per-category extraction instructions. Each embeds the operational decision
@@ -100,9 +105,10 @@ CATEGORY_INSTRUCTIONS = {
         "technological_foundation (free text): stated languages, frameworks, "
         "libraries, tools used in the implementation.\n\n"
         "For each component below, return Yes / No / Not stated with a verbatim "
-        "quote when Yes/No. Yes = quote affirms it exists; No = quote shows the "
-        "topic is discussed but this capability is absent; Not stated = the "
-        "document does not engage the topic at all (empty evidence).\n"
+        "quote when Yes/No. Yes = quote showing they talk about and cover the component "
+        "even partially; No = quote showing they explicitly state they don't have "
+        "this component (e.g., in a limitations section); Not stated = the document "
+        "does not talk about the component at all (empty evidence).\n"
         "- orchestrator: a coordination/backbone component or mechanism "
         "(workflow engine, pipeline, flow editor, coordination of "
         "classical-quantum steps), centralized or distributed.\n"
@@ -149,3 +155,14 @@ CATEGORY_INSTRUCTIONS = {
         "strength."
     ),
 }
+
+# Combined instruction for the default single-call (merged) extractor. Stitches
+# the four per-category instructions together so one structured-output call can
+# populate the whole record. The fan-out instructions above are reused verbatim
+# on the fallback path.
+MERGED_INSTRUCTION = (
+    MERGED_HEADER
+    + "\n\n".join(
+        f"## {name}\n{text}" for name, text in CATEGORY_INSTRUCTIONS.items()
+    )
+)

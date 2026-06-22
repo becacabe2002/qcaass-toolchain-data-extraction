@@ -37,7 +37,7 @@ def test_write_workbook_three_sheets(sample_record, tmp_path):
     assert not os.path.exists(out + ".tmp.xlsx")  # atomic swap cleaned up
 
     xls = pd.ExcelFile(out)
-    assert xls.sheet_names == ["tools", "algorithms", "challenges"]
+    assert xls.sheet_names == ["tools", "algorithms", "challenges", "validation_errors"]
     tools = pd.read_excel(out, sheet_name="tools")
     assert tools.loc[0, "tool_name"] == "Qubitron"
 

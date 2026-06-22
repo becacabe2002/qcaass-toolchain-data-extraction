@@ -20,6 +20,17 @@ MIN_QUOTE_WORDS = int(os.getenv("MIN_QUOTE_WORDS", "4"))
 # One retry per category per document.
 MAX_RETRIES_PER_CATEGORY = int(os.getenv("MAX_RETRIES_PER_CATEGORY", "1"))
 
+# Number of documents processed concurrently by the batch driver. Tune to the
+# API tier's TPM/RPM ceiling; start conservative.
+DEFAULT_CONCURRENCY = int(os.getenv("CONCURRENCY", "5"))
+
+# Where per-document checkpoints and the run manifest live (enables resume).
+DEFAULT_OUT_DIR = os.getenv("OUT_DIR", "runs/latest")
+
+# Per-call transport retries (429 / throttle) with provider-side backoff. This
+# is independent of the per-category validation retry budget above.
+MAX_API_RETRIES = int(os.getenv("MAX_API_RETRIES", "6"))
+
 # LangChain `init_chat_model` identifiers. Override via env to switch providers.
 FLASH_MODEL = os.getenv("FLASH_MODEL", "google_genai:gemini-3.5-flash")
 STRONG_MODEL = os.getenv("STRONG_MODEL", "openai:gpt-5.4-2026-03-05")

@@ -1,13 +1,16 @@
-# QCaaS Toolchain Data Extraction Pipeline — Design Blueprint (v2)
+# QCaaS Toolchain Data Extraction Pipeline — Design Blueprint (v3)
 
-## Changes in this revision
+## Changes in this revision (v3 — 174-file scaling)
 
-- **Output is a local `.xlsx` workbook**, written once after the batch completes via pandas + an atomic temp-file swap. The `langchain_google_community` Sheets dependency and all per-document upsert/idempotency machinery are gone.
-- **Locate step keeps returning verbatim paragraph text**, but a new deterministic **`reanchor`** node re-aligns that text to the canonical source before extraction, closing the quote-fidelity hole without asking the flash model for offsets/IDs.
-- **Parallel extractors fan out via plain edges**, not the `Send` API (`Send` is for runtime-unknown fan-out; here the four branches are fixed).
-- **`validation_errors` is overwritten each pass** (no accumulating reducer), and a new **`retry_counts`** field enforces the one-retry-per-category budget that v1 specified but had no way to honor.
-- Architecture stays a single structured-output call, now with explicit parse-failure handling.
-- No / Not-stated three-value enums retained; precise definitions to be refined later (schema values reserved so no data migration is needed).
+- **Merged-then-fallback extraction**: single strong-model call extracts all five categories (general, overview, architecture, algorithms, challenges) into a `FullExtraction` structured output. Only on validation failure do categories fall back to focused re-extraction. Cuts per-doc strong-model calls from 4 to 1 (or 2-4 on retry).
+- **Async concurrent batch driver**: documents process in parallel with semaphore-bounded concurrency (tune per API tier; default 5). Replaces serial loop.
+- **Per-document checkpointing**: each finished doc saved to `out_dir/records/<tool_id>.json` immediately after completion. Enables crash recovery: rerun the same command and only unfinished docs process.
+- **Stable content-hash IDs**: `tool_id(path)` derives from file content, not enumeration. Reordering docs or running multiple batches produces identical IDs, enabling resume and cross-run comparison.
+- **Rerun policies**: "resume" (default, skip done), "all" (reprocess everything), "status:failed" (retry only failed docs), explicit tool_ids (process specific docs).
+- **Manifest log** (`out_dir/manifest.jsonl`): audits every document attempt with status, duration, error (if any).
+- **Rate-limit resilience**: model clients with exponential backoff on 429; cross-doc concurrency bounded.
+- **`validation_errors` sheet**: every quote-fidelity failure captured in the workbook for spot-checking and refinement.
+- **Loader robustness**: detects empty/near-empty extractions (scanned PDFs) early; short docs bypass locate/reanchor.
 
 ## 1. Purpose
 
@@ -21,19 +24,22 @@ Two non-negotiable properties:
 ## 2. High-Level Architecture
 
 ```
-┌──────────┐   ┌────────────┐   ┌──────────┐   ┌──────────────────────┐   ┌──────────┐   ┌──────────┐
-│ load_doc │ → │locate_spans│ → │ reanchor │ → │ parallel extractors  │ → │ validate │ → │ assemble │
-│          │   │  (flash)   │   │ (det.)   │   │ (strong, fan-out ×4) │   │  (det.)  │   │ (record) │
-└──────────┘   └────────────┘   └──────────┘   └──────────────────────┘   └────┬─────┘   └────┬─────┘
-                                                   ├─ general + overview        │ retry        │
-                                                   ├─ architecture        ◄─────┘ (≤1/cat)     ▼
-                                                   ├─ algorithms                          ToolRecord
-                                                   └─ challenges                          → batch buffer
+┌──────────┐   ┌────────────┐   ┌──────────┐   ┌──────────────┐   ┌──────────┐   ┌──────────────────┐   ┌──────────┐
+│ load_doc │ → │locate_spans│ → │ reanchor │ → │extract_merged│ → │ validate │ → │ fallback (if err) │ → │ assemble │
+│          │   │  (flash)   │   │ (det.)   │   │   (strong)   │   │  (det.)  │   │ (strong, ≤1/cat) │   │ (record) │
+└──────────┘   └────────────┘   └──────────┘   └──────────────┘   └────┬─────┘   └──────────────────┘   └──────────┘
+                                                                         │
+                                                                    retry on
+                                                               validation errors
+                                                                    (loop back
+                                                                   to validate)
 
-                          [batch driver collects every ToolRecord, then] → write_workbook (.xlsx, once)
+                     [batch driver: async concurrency + checkpoint/resume] → write_workbook (.xlsx, once)
 ```
 
 **Two-stage extraction rationale.** A flash model with a large context window triages the document once, returning paragraphs grouped by extraction category. The expensive strong model then reads only the relevant spans per category. This reduces strong-model input tokens substantially without sacrificing recall — provided the locate step is instructed to over-retrieve rather than under-retrieve.
+
+**Merged-then-fallback extraction.** At scale (174+ documents), concurrency is the primary source of parallelism, not intra-document fan-out. A single merged call extracts the whole `ToolRecord` in one strong-model invocation, cutting 4× the model calls without loss of fidelity. If validation fails, only the errored categories fall back to focused re-extraction. This combines the throughput of merged extraction with the precision of category-specific retries.
 
 **Re-anchoring rationale.** The flash model returns paragraph *text*, but LLMs do not reliably reproduce long passages character-for-character regardless of prompt wording. The `reanchor` node fuzzy-matches each returned paragraph back into the canonical source text and substitutes the exact source slice. Downstream extractors therefore only ever see canonical text, so any quote they copy verbatim is guaranteed to be a substring of the source — and a failed re-anchor is a useful signal that the flash model fabricated or mangled a span.
 
@@ -167,7 +173,7 @@ Bind these to the strong model via `llm.with_structured_output(ModelClass)`.
 from typing import TypedDict
 
 class ExtractionState(TypedDict):
-    tool_id: str
+    tool_id: str                        # stable content-hash ID
     source_doc_path: str
     raw_text: str                       # canonical normalized source (validation reference)
     raw_paragraphs: list[str]           # canonical paragraphs, for re-anchoring
@@ -178,23 +184,33 @@ class ExtractionState(TypedDict):
     located_spans: dict[str, list[str]]
     reanchor_dropped: list[str]         # paragraphs the flash model returned that failed to re-anchor
 
-    # Per-category extraction outputs
+    # Merged extraction output (extract_merged node) — all categories at once
     general: GeneralInfo | None
     overview: OverviewCharacteristics | None
     architecture: Architecture | None
     algorithms: AlgorithmsSection | None
     challenges: ChallengesSection | None
+    parse_failures: dict[str, str]      # category → error; tracks extract_merged parse failures
 
     # Validator results — recomputed (OVERWRITTEN) on every validate pass, never accumulated
     validation_errors: list[dict]       # [{field_path, value, quote, reason}]
-    categories_to_retry: list[str]      # set by validate, read by the retry router
+    categories_to_retry: list[str]      # set by validate, read by fallback routers
     retry_counts: dict[str, int]        # category → attempts; enforces the ≤1 retry budget
 
     # Final assembled record (consumed by the batch driver)
     record: ToolRecord | None
 ```
 
-Note the deliberate absence of `Annotated[..., add]` on `validation_errors`: the four extractors write to *distinct* keys (`general`, `overview`, `architecture`, `challenges`), so no concurrent-write reducer is needed, and the validator must see only the current pass's errors.
+**State flow:**
+- `load_doc` → `raw_text`, `raw_paragraphs`, `token_count`, conditional edge (locate for long docs vs. skip for short).
+- `locate_spans` → `located_spans` (category-keyed spans).
+- `reanchor` → `located_spans` (in-place canonical realignment), `reanchor_dropped`.
+- `extract_merged` → `general`, `overview`, `architecture`, `algorithms`, `challenges` (all from one call); or `parse_failures` on failure.
+- `validate` → `validation_errors`, `categories_to_retry`, `retry_counts` (overwritten each pass).
+- `[fallback extractors]` (conditional) → category state keys (only errored categories).
+- `assemble` → `record`.
+
+Note the deliberate absence of `Annotated[..., add]` on `validation_errors`: each pass overwrites it completely, never accumulating. The validator must see only the current pass's errors to decide retries correctly.
 
 ## 5. Node Specifications
 
@@ -237,15 +253,22 @@ def reanchor(state: ExtractionState) -> dict:
     return {"located_spans": fixed, "reanchor_dropped": dropped}
 ```
 
-### Parallel extractor nodes (strong model)
-Four nodes, reached by **plain fan-out edges** from `reanchor` (and from the bypass branch). Each writes a distinct state key, so they run concurrently in one superstep with no reducer:
+### Merged extractor node (strong model)
+
+`extract_merged` — single call, returns `FullExtraction` (all five categories: general, overview, architecture, algorithms, challenges). Receives all canonical spans grouped by category from `located_spans`. 
+
+Uses `with_structured_output(FullExtraction)` on the strong model. Because structured output can return `None` or raise on malformed completion, wraps in parse-failure handling: on failure, populates `parse_failures` dict (keyed by category), leaves all state keys with safe empty/"Not stated" defaults, and proceeds to `validate`. The validator will route errored categories to fallback extraction.
+
+### Fallback extractor nodes (strong model, reached only on validation errors)
+
+Four nodes, reached by **conditional edges** from `validate` when `categories_to_retry` is non-empty. Each writes its category's state key:
 
 - `extract_general_and_overview` — bundled (both short, share a call efficiently). Returns `GeneralInfo` and `OverviewCharacteristics`.
-- `extract_architecture` — returns `Architecture` (12 fields; the heaviest call). Wrap `with_structured_output` in parse-failure handling (see below).
+- `extract_architecture` — returns `Architecture` (12 fields; the heaviest call).
 - `extract_algorithms` — returns `AlgorithmsSection`.
 - `extract_challenges` — returns `ChallengesSection`.
 
-Each receives only its category's canonical spans from `located_spans`. Each uses `with_structured_output()` against its target Pydantic class. Because structured output can return `None` or raise on a malformed completion, each extractor catches that case, records a synthetic validation error for the category, and leaves its state key populated with a safe empty/"Not stated" default so the graph can proceed to (and retry from) `validate`.
+Each receives only its category's canonical spans from `located_spans` and runs a stricter prompt forbidding paraphrase. Like `extract_merged`, catches parse failures and leaves defaults so the graph re-enters `validate` for another retry pass.
 
 ### `validate` (deterministic)
 Recomputes `validation_errors` from scratch each pass (overwrite). For every populated `evidence` field across the current outputs:
@@ -343,6 +366,16 @@ One workbook, three worksheets. Long-format for the one-to-many sections keeps t
 | `evidence_strength` | `Challenge.evidence_strength` |
 | `strength_evidence` | `Challenge.strength_evidence` |
 
+### Sheet 4: `validation_errors` — every quote-fidelity failure
+
+| Column | Source |
+|---|---|
+| `tool_id` | foreign key |
+| `field_path` | dot-notation path (e.g. `general.source_type`) |
+| `value` | the coded/extracted value |
+| `quote` | the evidence string that failed validation |
+| `reason` | why it failed (e.g. "not found in source", "below min length") |
+
 ### Writing the workbook (once, after the batch)
 
 ```python
@@ -366,20 +399,45 @@ def write_workbook(records: list[ToolRecord], path: str) -> None:
 
 The three `flatten_*` functions are pure (`ToolRecord` → list of dicts) and unit-testable in isolation.
 
-### Batch driver
+### Batch driver (async, concurrent, checkpointing)
 
 ```python
-def run_corpus(doc_paths: list[str], out_path: str) -> None:
-    records: list[ToolRecord] = []
-    for i, p in enumerate(doc_paths):
-        init = build_initial_state(tool_id=f"T{i:03d}", source_doc_path=p)
-        final = graph.invoke(init)
-        if final["record"] is not None:
-            records.append(final["record"])
+async def run_corpus_async(doc_paths: list[str], out_path: str, *, concurrency=5, 
+                           out_dir="runs/latest", rerun="resume") -> None:
+    sem = asyncio.Semaphore(concurrency)
+    targets = select_targets(doc_paths, rerun, out_dir)  # resume/all/status:X/explicit-ids
+    
+    async def worker(path):
+        tid = tool_id(path)  # stable content-hash ID
+        async with sem:
+            try:
+                init = build_initial_state(tool_id=tid, source_doc_path=path)
+                final = await graph.ainvoke(init)
+                if final["record"] is not None:
+                    save_record(final["record"], out_dir)  # per-doc checkpoint
+                    log_manifest(tid, path, "done" if not final["record"].needs_review else "needs_review")
+            except Exception as e:
+                log_manifest(tid, path, "failed", error=repr(e))
+    
+    await asyncio.gather(*(worker(p) for p in targets))
+    records = load_all_records(out_dir)  # rebuild from checkpoints
     write_workbook(records, out_path)
 ```
 
-If incremental updates are ever needed instead of full rebuild: read the three sheets into DataFrames, drop rows whose `tool_id` is in the current batch, `concat` the new rows, and write the whole workbook back via the same atomic swap. Still no row-level surgery.
+**Key features:**
+- **Bounded concurrency**: `Semaphore(concurrency)` limits parallelism (tune per API tier, default 5).
+- **Stable IDs**: `tool_id(path)` derives from file content hash, enabling resume across reorderings.
+- **Checkpoint per doc**: `save_record()` writes `out_dir/records/<tool_id>.json` immediately after completion.
+- **Manifest log**: `out_dir/manifest.jsonl` appends `{tool_id, path, status, error, duration_s, ts}` per attempt.
+- **Rerun policies**: `select_targets()` filters by: "resume" (skip done), "all" (reprocess all), "status:X" (by last status), or explicit tool_ids.
+- **Failure isolation**: one doc's exception doesn't abort the batch; error is logged and next doc processes.
+- **Workbook rebuild**: read all checkpoints, not an in-memory list, so partial runs still yield a complete workbook of what's done.
+
+Synchronous wrapper:
+```python
+def run_corpus(doc_paths, out_path, **kwargs):
+    return asyncio.run(run_corpus_async(doc_paths, out_path, **kwargs))
+```
 
 ## 8. Validation Details
 
@@ -392,29 +450,55 @@ If incremental updates are ever needed instead of full rebuild: read the three s
 
 ## 9. Cost & Latency Notes
 
-- Locate step: 1 flash call per document, large input, modest output.
+- Locate step: 1 flash call per document (long docs only; short docs skip directly to extraction).
 - Re-anchor: free (deterministic fuzzy matching).
-- Extraction: 4 strong-model calls per document, run concurrently. Limited by the slowest branch (architecture, typically).
+- Extraction (happy path): 1 strong-model call per document (merged extraction).
+- Extraction (fallback): up to 4 focused strong-model calls per document, only if merged validation fails. Each errored category retries ≤1 time.
 - Evidence roughly doubles output tokens per coded field but barely affects input cost.
 - Validator and workbook write: free / local.
-- For ~50 documents, cost is dominated by the 50 × 4 strong-model calls (plus any retries).
+- For 174 documents with merged extraction: ~348 min calls (174 flash + 174 strong), vs. ~870 for 4-way fan-out. Fallback adds only on validation failures.
 
-## 10. Open Items / To Confirm Before Building
+## 10. Scaling & Reliability
+
+### Crash recovery via checkpointing
+
+- Per-document checkpoints in `out_dir/records/<tool_id>.json` enable resume from any point. Default rerun mode is "resume": skip finished docs.
+- Manifest log (`out_dir/manifest.jsonl`) audits every attempt: `{tool_id, path, status: done|needs_review|failed, duration_s, ts}`.
+- No in-memory state means a crash at doc 170/174 costs only the 4 unfinished docs on rerun, not 174 full calls.
+
+### Stable tool IDs
+
+- `tool_id(path)` derives from file content hash, not enumeration. Reordering docs, renaming files, or running multiple batches produces identical IDs for identical content.
+- Enables cross-run comparison and prevents duplicate-ID collisions on resume.
+
+### Rate-limit resilience
+
+- LLM model clients configured with `max_retries=6` (default) for exponential backoff on 429/throttle.
+- Cross-doc semaphore (`concurrency=5` default) keeps under TPM/RPM ceilings; tune per API tier.
+
+## 11. Open Items / To Confirm Before Building
 
 - Document format and quantity — PDF vs HTML vs raw text affects the loader (and therefore canonical-text fidelity).
-- Strong-model robustness on the 12-field `Architecture` schema — keep as one call unless flakiness appears; natural split is component clusters (infra / quality / surface), not an arbitrary halving.
+- Strong-model robustness on the merged `FullExtraction` schema — fallback extractors handle category-level failures gracefully.
 - Whether to interrupt before `assemble` for human review of `needs_review` records, or review post-hoc in the workbook.
 - One `.xlsx` with three sheets (human-friendly browsing) vs. three CSVs (lighter analysis-env dependency).
 - Choice of flash and strong models.
 - Sharpen the `No` vs `Not stated` definitions before the main extraction run.
+- Pre-run cost estimation: helpful for 174-file corpus to confirm projected call count before committing API spend.
 
-## 11. Suggested Build Order
+## 12. Suggested Build Order
 
 1. Pydantic schema + a unit test that instantiates every model with example values.
+   - Add `FullExtraction` model (all five categories in one call).
 2. The validator (pure function: document + outputs → list of errors). Test against synthetic hallucinated quotes, short-clause false positives, and smart-quote variants.
-3. `flatten_*` functions + `write_workbook` with mocked records — confirm the three-sheet workbook renders as expected and the atomic swap works on both OSes.
+3. `flatten_*` functions + `write_workbook` with mocked records — confirm the four-sheet workbook renders as expected (tools, algorithms, challenges, validation_errors) and the atomic swap works on both OSes.
 4. `reanchor` in isolation — feed it deliberately mangled paragraphs and confirm canonical recovery + correct drops.
 5. Single-document end-to-end with the short-doc bypass (skip locate + reanchor). Verify against a known-good extraction.
 6. Add `locate_spans`, `reanchor`, and conditional routing.
-7. Add the four fan-out extractors (plain edges) and the `validate ↔ extractor` retry loop with `retry_counts`.
-8. Batch over the full corpus via the driver.
+7. **Add the merged extractor** (`extract_merged` returning `FullExtraction`) with parse-failure handling (populates `parse_failures` on failure).
+8. Add fallback extractors (four focused calls, reached only on validation errors) and the `validate ↔ fallback` retry loop with `retry_counts`.
+9. **Stable IDs** (`ids.py`: `tool_id(path)` from content hash).
+10. **Checkpoint store** (`checkpoint.py`: per-doc records + manifest logging).
+11. **Async concurrent driver** (`driver.py`): bounded concurrency, rerun policies, per-doc failure isolation.
+12. CLI + argument parsing: `--rerun`, `--concurrency`, `--out-dir`, `--estimate`.
+13. Batch over 174+ documents with concurrent processing. Monitor manifest for failures; retry with `--rerun status:failed`.

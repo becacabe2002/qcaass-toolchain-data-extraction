@@ -1,8 +1,6 @@
-"""Batch driver (Section 7 of the blueprint), hardened for a 174-file corpus.
-
+"""Batch driver
 Cross-document concurrency, per-document checkpoint + resume, failure
-isolation, and an explicit rerun policy. The per-document graph is unchanged;
-only orchestration of many runs differs from the blueprint's serial loop.
+isolation, and an explicit rerun policy.
 """
 
 from __future__ import annotations
@@ -13,12 +11,13 @@ import time
 from collections.abc import Iterable
 
 from .checkpoint import CheckpointStore
-from .config import DEFAULT_CONCURRENCY, DEFAULT_OUT_DIR
+from .config import DEFAULT_CONCURRENCY, DEFAULT_OUT_DIR, SHORT_DOC_TOKEN_THRESHOLD as _THRESH
 from .graph import build_graph
-from .loader import tool_id as compute_tool_id
+from .loader import tool_id as compute_tool_id, estimate_tokens, extract_text
 from .schema import ToolRecord
 from .state import ExtractionState
 from .workbook import write_workbook
+from .normalize import canonicalize
 
 logger = logging.getLogger(__name__)
 
@@ -128,9 +127,6 @@ async def run_corpus_async(
 
 
 def estimate_corpus(doc_paths: list[str]) -> dict:
-    from .loader import estimate_tokens, extract_text
-    from .normalize import canonicalize
-    from .config import SHORT_DOC_TOKEN_THRESHOLD as _THRESH
 
     total_tokens = 0
     long_docs = 0

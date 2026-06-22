@@ -1,5 +1,3 @@
-"""QCaaS toolchain data-extraction pipeline."""
-
 from __future__ import annotations
 
 from .driver import build_initial_state, run_corpus

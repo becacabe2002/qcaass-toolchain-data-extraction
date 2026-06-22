@@ -38,10 +38,12 @@ def _parse_rerun(value: str):
 
 
 def main(argv: list[str] | None = None) -> int:
+
     load_dotenv()
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
     )
+    
     parser = argparse.ArgumentParser(prog="qcaass_extraction")
     parser.add_argument("out_path", help="Output .xlsx workbook path")
     parser.add_argument("docs", nargs="*", help="Document paths")

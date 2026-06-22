@@ -1,5 +1,4 @@
-"""Pydantic extraction schema (Section 3 of the blueprint).
-
+"""Pydantic extraction schema
 Every categorical field is wrapped so ``value`` and ``evidence`` travel
 together. Free-text fields stay plain strings.
 """

@@ -52,10 +52,10 @@ def extract_text(path: str) -> str:
     """Extract raw text from a PDF, HTML, or plain-text file."""
     ext = os.path.splitext(path)[1].lower()
     if ext == ".pdf":
-        from pypdf import PdfReader
+        import fitz  # PyMuPDF
 
-        reader = PdfReader(path)
-        return "\n\n".join(page.extract_text() or "" for page in reader.pages)
+        with fitz.open(path) as doc:
+            return "\n\n".join(page.get_text() for page in doc)
     if ext in (".html", ".htm"):
         from bs4 import BeautifulSoup
 

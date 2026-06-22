@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from langgraph.graph import END, START, StateGraph
 
-from .assemble import assemble
 from .config import SHORT_DOC_TOKEN_THRESHOLD
 from .extractors import (
     CATEGORY_TO_NODE,
@@ -15,13 +14,36 @@ from .extractors import (
     extract_merged,
 )
 from .loader import load_doc
-from .locate import locate_spans
-from .reanchor import reanchor
+from .locate import locate_spans, reanchor
+from .schema import (
+    ToolRecord,
+    empty_algorithms,
+    empty_architecture,
+    empty_challenges,
+    empty_general,
+    empty_overview,
+)
 from .state import ExtractionState
 from .validate import validate
 
 # Focused per-category extractors. Reached only as the fallback path when the
 # merged call's output fails validation (see route_after_validate).
+def assemble(state: ExtractionState) -> dict:
+    errors = state.get("validation_errors") or []
+    record = ToolRecord(
+        tool_id=state["tool_id"],
+        source_doc_path=state["source_doc_path"],
+        general=state.get("general") or empty_general(),
+        overview=state.get("overview") or empty_overview(),
+        architecture=state.get("architecture") or empty_architecture(),
+        algorithms=state.get("algorithms") or empty_algorithms(),
+        challenges=state.get("challenges") or empty_challenges(),
+        needs_review=bool(errors),
+        validation_errors=errors,
+    )
+    return {"record": record}
+
+
 EXTRACTOR_NODES = [
     "extract_general_and_overview",
     "extract_architecture",

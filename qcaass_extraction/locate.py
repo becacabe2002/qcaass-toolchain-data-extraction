@@ -1,4 +1,4 @@
-"""locate_spans node (flash model, Section 5 of the blueprint)."""
+"""locate_spans and reanchor nodes (flash model, Section 5 of the blueprint)."""
 
 from __future__ import annotations
 
@@ -6,8 +6,9 @@ import ast
 import json
 import logging
 
-from .config import CATEGORIES
-from .models import get_flash_model
+from rapidfuzz import fuzz, process
+
+from .config import CATEGORIES, REANCHOR_THRESHOLD, get_flash_model
 from .prompts import LOCATE_PROMPT
 from .state import ExtractionState
 
@@ -85,6 +86,27 @@ def _content_to_text(content) -> str:
         ]
         return "".join(parts)
     return str(content)
+
+
+def reanchor(state: ExtractionState) -> dict:
+    raw_paras = state["raw_paragraphs"]
+    fixed: dict[str, list[str]] = {}
+    dropped: list[str] = []
+    for cat, paras in state["located_spans"].items():
+        keep: list[str] = []
+        for p in paras:
+            match = process.extractOne(p, raw_paras, scorer=fuzz.partial_ratio)
+            if match and match[1] >= REANCHOR_THRESHOLD:
+                canonical = raw_paras[match[2]]
+                if canonical not in keep:
+                    keep.append(canonical)
+            else:
+                dropped.append(p)
+        fixed[cat] = keep
+        logger.info(
+            "reanchor[%s]: kept %d, dropped %d", cat, len(keep), len(paras) - len(keep)
+        )
+    return {"located_spans": fixed, "reanchor_dropped": dropped}
 
 
 def locate_spans(state: ExtractionState) -> dict:

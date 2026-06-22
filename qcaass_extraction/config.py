@@ -34,3 +34,26 @@ MAX_API_RETRIES = int(os.getenv("MAX_API_RETRIES", "6"))
 # LangChain `init_chat_model` identifiers. Override via env to switch providers.
 FLASH_MODEL = os.getenv("FLASH_MODEL", "google_genai:gemini-3.5-flash")
 STRONG_MODEL = os.getenv("STRONG_MODEL", "openai:gpt-5.4-2026-03-05")
+
+_flash_model = None
+_strong_model = None
+
+
+def get_flash_model():
+    global _flash_model
+    if _flash_model is None:
+        from langchain.chat_models import init_chat_model
+        _flash_model = init_chat_model(
+            FLASH_MODEL, temperature=0, max_tokens=8192, max_retries=MAX_API_RETRIES
+        )
+    return _flash_model
+
+
+def get_strong_model():
+    global _strong_model
+    if _strong_model is None:
+        from langchain.chat_models import init_chat_model
+        _strong_model = init_chat_model(
+            STRONG_MODEL, reasoning_effort="none", max_retries=MAX_API_RETRIES
+        )
+    return _strong_model

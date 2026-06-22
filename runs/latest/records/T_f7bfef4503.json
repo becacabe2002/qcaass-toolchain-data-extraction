@@ -1,0 +1,184 @@
+{
+  "tool_id": "T_f7bfef4503",
+  "source_doc_path": ".\\data\\staq _ A full-stack quantum processing toolkit.pdf",
+  "general": {
+    "tool_name": "staq",
+    "purpose": "staq is a compiler and software toolkit for the openQASM language whose goal is to provide transformation, optimization, and compilation tools on a common language while targeting different simulation and hardware platforms.",
+    "source_type": {
+      "value": "Not stated",
+      "evidence": ""
+    },
+    "contribution_type": {
+      "value": "Not stated",
+      "evidence": ""
+    }
+  },
+  "overview": {
+    "input_instruction": {
+      "value": "QI",
+      "evidence": "operating on a single textual language, openQASM [15]."
+    },
+    "output_type": {
+      "value": "QSC",
+      "evidence": "Finally, staq can generate quantum code in a variety of formats that encompass many of the currently available quantum platforms [15, 18, 19, 9, 10, 12]."
+    },
+    "automation_level": {
+      "value": "FA",
+      "evidence": "staq achieves complex functionality via combining (piping) small tools, each of which performs a single task using the most advanced current state-of-the-art methods."
+    },
+    "evaluation_type": {
+      "value": "EX",
+      "evidence": "The remainder of this paper describes the staq toolkit and its functionality and uses cases while providing a set of benchmarks (Section 2),"
+    }
+  },
+  "architecture": {
+    "design_principles": "The architecture emphasizes a UNIX-style philosophy of composing many small single-purpose tools into larger workflows. It also follows a Clang-style, syntax-tree-based modular compiler design so transformations can be applied independently and combined flexibly.",
+    "technological_foundation": "Implemented in standard C++ using the C++17 standard, with a Clang-inspired approach based on QASM syntax trees and Visitor classes. It includes source-to-source compiler/transpiler tooling targeting formats such as Quil, ProjectQ, Q#, and Cirq.",
+    "orchestrator": {
+      "value": "Yes",
+      "evidence": "The main command line compiler staq - oﬀers a ﬂexible pass registration system, whereby passes are given via command-line arguments and are executed in the order given."
+    },
+    "manager_controller": {
+      "value": "Not stated",
+      "evidence": ""
+    },
+    "vendor_agnostic_layer": {
+      "value": "Yes",
+      "evidence": "Finally, staq can generate quantum code in a variety of formats that encompass many of the currently available quantu m platforms [15, 18, 19, 9, 10, 12]."
+    },
+    "backend_integration": {
+      "value": "Yes",
+      "evidence": "Along with the default QASM output, staq includes a suite of source-to-source compilers or \"transpilers\", currently supporting output to Quil [9], ProjectQ [10], Q# [12], and Cir q [18]."
+    },
+    "debugging_testing": {
+      "value": "Not stated",
+      "evidence": ""
+    },
+    "simulation_support": {
+      "value": "Not stated",
+      "evidence": ""
+    },
+    "security_mechanisms": {
+      "value": "Not stated",
+      "evidence": ""
+    },
+    "scalability_mechanisms": {
+      "value": "Not stated",
+      "evidence": ""
+    },
+    "telemetry_monitoring": {
+      "value": "Not stated",
+      "evidence": ""
+    },
+    "user_interface": {
+      "value": "Yes",
+      "evidence": "The main command line compiler staq - oﬀers a ﬂexible pass registration system, whereby passes are given via command-line arguments and are executed in the order given."
+    }
+  },
+  "algorithms": {
+    "offers_algorithms": "Yes",
+    "overall_evidence": "\"staq currently implements three layout generation algorithms: linear, eager, and best-fit.\"",
+    "algorithms": [
+      {
+        "name": "LHRS (LUT-based Hierarchical Reversible Logic Synthesis)",
+        "algorithm_type": "synthesis",
+        "evidence": "\"synthesized over the Cliﬀord group and T gates using the EPFL implementation of the LUT-based Hierarchical Reversible Logic Synthesis (LHRS) framework [23].\""
+      },
+      {
+        "name": "Gray-synth",
+        "algorithm_type": "synthesis",
+        "evidence": "\"For these purposes staq includes an optimization pass - CNOT resynthesis to reduce the number of cx (i.e. CNOT) gates in a program by performing the CNOT-dihedral algo rithm Gray-synth of Amy, Azimzadeh, and Mosca [25].\""
+      },
+      {
+        "name": "linear",
+        "algorithm_type": "layout generation",
+        "evidence": "\"staq currently implements three layout generation algorithms: linear, eager, and best-fit.\""
+      },
+      {
+        "name": "eager",
+        "algorithm_type": "layout generation",
+        "evidence": "\"staq currently implements three layout generation algorithms: linear, eager, and best-fit.\""
+      },
+      {
+        "name": "best-fit",
+        "algorithm_type": "layout generation",
+        "evidence": "\"staq currently implements three layout generation algorithms: linear, eager, and best-fit.\""
+      },
+      {
+        "name": "permutation-based mapping (swap)",
+        "algorithm_type": "mapping",
+        "evidence": "\"staq implements a version of permutation-based mapping (swap) where for a CNOT gate between uncoupled qubits, the endpoints are swapped along the shortest (weight ed) path in the coupling graph until they are adjacent.\""
+      },
+      {
+        "name": "steiner",
+        "algorithm_type": "mapping",
+        "evidence": "\"Along with the swap mapping algorithm, staq includes a mapping algorithm ( steiner) based on constrained CNOT and CNOT-dihedral synthesis in the style of [34] a nd [35].\""
+      },
+      {
+        "name": "constrained Gray-synthesis",
+        "algorithm_type": "synthesis",
+        "evidence": "\"staq performs constrained Gray-synthesis by delaying CNOT gates until a partition of size 1 is reached.\""
+      }
+    ]
+  },
+  "challenges": {
+    "challenges": [
+      {
+        "statement": "Some optimization routines may become prohibitively expensive because repeated simplification to a fixpoint can make runtime quadratic in program length.",
+        "category": "Performance",
+        "category_evidence": "In some cases this extra cos t making the optimization quadratic in the length of the program - may b e prohibitive.",
+        "evidence_strength": "Implicit anecdotal",
+        "strength_evidence": "In some cases this extra cos t making the optimization quadratic in the length of the program - may b e prohibitive."
+      },
+      {
+        "statement": "Scalability of the optimization algorithms remains an open issue as the number of qubits grows.",
+        "category": "Scalability",
+        "category_evidence": "It remains a focus of future work to im prove the scalability of staq's optimization algorithms as the number of qubits increases.",
+        "evidence_strength": "Explicit empirical",
+        "strength_evidence": "The best results in either case are identiﬁed in bold. For circuit optimizatio n, staq beats Qiskit"
+      },
+      {
+        "statement": "Hardware mapping quality is inconsistent, with mixed benchmark results and worse CNOT counts than Qiskit in most cases.",
+        "category": "Performance",
+        "category_evidence": "While the Steiner mapping algorithm with best-fit initial layout was consistently orders of magnitude faster than Qisk it's default mapping algorithm, Qiskit outperformed staq in terms of CNOT counts in the majority of cases.",
+        "evidence_strength": "Explicit empirical",
+        "strength_evidence": "the experimental results for hardware mapping were mixed."
+      },
+      {
+        "statement": "The current layout optimization may get trapped in local minima, and more sophisticated search methods may be needed.",
+        "category": "Scalability",
+        "category_evidence": "It remains to be seen whether more sophisticated layout optimization a lgorithms which avoid local minima for instance, simulated annealing - can improve the results further .",
+        "evidence_strength": "Implicit anecdotal",
+        "strength_evidence": "It remains to be seen whether more sophisticated layout optimization a lgorithms which avoid local minima for instance, simulated annealing - can improve the results further ."
+      },
+      {
+        "statement": "Support for local ancilla allocation is limited by non-standard QASM and poor compatibility with most QPUs, requiring automatic ancilla management during compilation.",
+        "category": "Interoperability",
+        "category_evidence": "As local ancilla allocation is non-standard QASM and moreover not sup ported by most QPUs, staq performs automatic ancilla management during the inlining phase of co mpilation.",
+        "evidence_strength": "Implicit anecdotal",
+        "strength_evidence": "As local ancilla allocation is non-standard QASM and moreover not sup ported by most QPUs"
+      }
+    ]
+  },
+  "needs_review": true,
+  "validation_errors": [
+    {
+      "field_path": "overview.output_type",
+      "value": "QSC",
+      "quote": "Finally, staq can generate quantum code in a variety of formats that encompass many of the currently available quantum platforms [15, 18, 19, 9, 10, 12].",
+      "reason": "quote not found verbatim in source"
+    },
+    {
+      "field_path": "overview.automation_level",
+      "value": "FA",
+      "quote": "staq achieves complex functionality via combining (piping) small tools, each of which performs a single task using the most advanced current state-of-the-art methods.",
+      "reason": "quote not found verbatim in source"
+    },
+    {
+      "field_path": "algorithms.algorithms[0].evidence",
+      "value": "LHRS (LUT-based Hierarchical Reversible Logic Synthesis)",
+      "quote": "\"synthesized over the Cliﬀord group and T gates using the EPFL implementation of the LUT-based Hierarchical Reversible Logic Synthesis (LHRS) framework [23].\"",
+      "reason": "quote not found verbatim in source"
+    }
+  ]
+}

@@ -18,7 +18,7 @@ import sys
 from dotenv import load_dotenv
 
 from .config import DEFAULT_CONCURRENCY, DEFAULT_OUT_DIR
-from .cost import estimate_corpus, format_estimate
+from .driver import estimate_corpus, format_estimate
 from .driver import run_corpus
 
 

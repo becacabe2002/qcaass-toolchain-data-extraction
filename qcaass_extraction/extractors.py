@@ -9,7 +9,7 @@ empty default is written, and the failure is recorded in `parse_failures`
 from __future__ import annotations
 
 from .config import CATEGORIES
-from .models import get_strong_model
+from .config import get_strong_model
 from .prompts import (
     CATEGORY_INSTRUCTIONS,
     MERGED_INSTRUCTION,

@@ -15,7 +15,7 @@ from collections.abc import Iterable
 from .checkpoint import CheckpointStore
 from .config import DEFAULT_CONCURRENCY, DEFAULT_OUT_DIR
 from .graph import build_graph
-from .ids import tool_id as compute_tool_id
+from .loader import tool_id as compute_tool_id
 from .schema import ToolRecord
 from .state import ExtractionState
 from .workbook import write_workbook
@@ -125,6 +125,49 @@ async def run_corpus_async(
     write_workbook(records, out_path)
     logger.info("Wrote %d record(s) to %s", len(records), out_path)
     return records
+
+
+def estimate_corpus(doc_paths: list[str]) -> dict:
+    from .loader import estimate_tokens, extract_text
+    from .normalize import canonicalize
+    from .config import SHORT_DOC_TOKEN_THRESHOLD as _THRESH
+
+    total_tokens = 0
+    long_docs = 0
+    failed = 0
+    for p in doc_paths:
+        try:
+            tokens = estimate_tokens(canonicalize(extract_text(p)))
+        except Exception:  # noqa: BLE001
+            failed += 1
+            continue
+        total_tokens += tokens
+        if tokens > _THRESH:
+            long_docs += 1
+
+    n = len(doc_paths) - failed
+    return {
+        "documents": len(doc_paths),
+        "readable": n,
+        "unreadable": failed,
+        "long_docs": long_docs,
+        "total_input_tokens": total_tokens,
+        "min_flash_calls": long_docs,
+        "min_strong_calls": n,
+        "min_total_calls": long_docs + n,
+    }
+
+
+def format_estimate(est: dict) -> str:
+    return (
+        f"Documents: {est['documents']} "
+        f"({est['readable']} readable, {est['unreadable']} unreadable)\n"
+        f"Long docs (use locate): {est['long_docs']}\n"
+        f"Total input tokens (approx): {est['total_input_tokens']:,}\n"
+        f"Min model calls: {est['min_total_calls']} "
+        f"({est['min_flash_calls']} flash + {est['min_strong_calls']} strong), "
+        "plus fallback/retry on any failures."
+    )
 
 
 def run_corpus(

@@ -1,0 +1,145 @@
+{
+  "tool_id": "T_b9198d13c7",
+  "source_doc_path": ".\\data\\QFaaS _ A serverless Function-as-a-Service Framework for Quantum Computing.pdf",
+  "general": {
+    "tool_name": "QFaaS",
+    "purpose": "QFaaS is a proposed quantum Function-as-a-Service framework intended to reduce quantum software engineering challenges, particularly diversity across programming languages and hardware platforms, by applying serverless and modern software engineering approaches. It aims to support practical quantum computing and ease the transition for traditional software engineers into hybrid quantum-classical development.",
+    "source_type": {
+      "value": "OS",
+      "evidence": "Software Availability: We will release the QFaaS framework in open source"
+    },
+    "contribution_type": {
+      "value": "Not stated",
+      "evidence": ""
+    }
+  },
+  "overview": {
+    "input_instruction": {
+      "value": "Multiple",
+      "evidence": "We design QFaaS as a unified quantum computing framework by supporting well-known quantum languages and software development kits (Qiskit, Q#, Cirq, and Braket)"
+    },
+    "output_type": {
+      "value": "Multiple",
+      "evidence": "After finishing all the processing, the function handler could return the result to end-users, including the HTTP Status Code and response data in JSON format."
+    },
+    "automation_level": {
+      "value": "FA",
+      "evidence": "We utilize the DevOps techniques in operating QFaaS, including continuous integration and continuous deployment, which supports to automate the quantum software development cycle, from quantum environment setup to hybrid quantum-classical function deployment."
+    },
+    "evaluation_type": {
+      "value": "EX",
+      "evidence": "We present two practical use cases and perform the evaluations on quantum computers and simulators"
+    }
+  },
+  "architecture": {
+    "design_principles": "The framework is designed around modularity, with separate pluggable modules responsible for specific functionality so the system can be extended and maintained more easily. It also draws on microservice and XaaS ideas, emphasizing portability, scalability, hybrid quantum-classical support, containerization, and DevOps-based operation.",
+    "technological_foundation": "QFaaS is built using Docker containers and Kubernetes, and integrates DevOps practices such as CI/CD. It supports Qiskit, Q#, Cirq, and Braket, and connects to IBM Quantum and Amazon Braket, with JSON used for standardizing requests and responses.",
+    "orchestrator": {
+      "value": "Yes",
+      "evidence": "We employed Kubernetes to orchestrate all the pods (the container-based unit of Kubernetes) for the QFaaS function across all cluster nodes."
+    },
+    "manager_controller": {
+      "value": "Yes",
+      "evidence": "We break down QFaaS into six components: the QFaaS Core APIs and API Gateway, the Application Deployment Layer, the Classical Cloud Layer, the Quantum Cloud Layer, the Monitoring Layer, and the User Interface."
+    },
+    "vendor_agnostic_layer": {
+      "value": "Yes",
+      "evidence": "We design QFaaS as a unified quantum computing framework by supporting well-known quantum languages and software development kits (Qiskit, Q#, Cirq, and Braket), executing the quantum tasks on multiple simulators and quantum cloud providers (IBM Quantum and Amazon Braket)."
+    },
+    "backend_integration": {
+      "value": "Yes",
+      "evidence": "We design QFaaS as a unified quantum computing framework by supporting well-known quantum languages and software development kits (Qiskit, Q#, Cirq, and Braket), executing the quantum tasks on multiple simulators and quantum cloud providers (IBM Quantum and Amazon Braket)."
+    },
+    "debugging_testing": {
+      "value": "Not stated",
+      "evidence": ""
+    },
+    "simulation_support": {
+      "value": "Yes",
+      "evidence": "All quantum SDKs and languages have their built-in quantum simulator, which can run directly inside a pod at the Kubernetes cluster."
+    },
+    "security_mechanisms": {
+      "value": "Yes",
+      "evidence": "We will enhance the security and scalability capabilities in QFaaS to support a large number of requests from multiple users."
+    },
+    "scalability_mechanisms": {
+      "value": "Yes",
+      "evidence": "Each function will be run on a pod and could be scaled up horizontally by replicating the original pod."
+    },
+    "telemetry_monitoring": {
+      "value": "Yes",
+      "evidence": "We break down QFaaS into six components: the QFaaS Core APIs and API Gateway, the Application Deployment Layer, the Classical Cloud Layer, the Quantum Cloud Layer, the Monitoring Layer, and the User Interface."
+    },
+    "user_interface": {
+      "value": "Yes",
+      "evidence": "Our framework also provides multiple ways for users to interact with the core components, including QFaaS Dashboard (a modern web-based application), QFaaS CLI (an interactive command-line tool), and QFaaS Core APIs."
+    }
+  },
+  "algorithms": {
+    "offers_algorithms": "No",
+    "overall_evidence": "We have implemented two application use cases with QFaaS to validate our proposed design and demonstrate how our framework can facilitate quantum software development in practice.",
+    "algorithms": []
+  },
+  "challenges": {
+    "challenges": [
+      {
+        "statement": "Quantum software engineering faces interoperability challenges because of the diversity of quantum programming languages and hardware platforms.",
+        "category": "Interoperability",
+        "category_evidence": "However, quantum software engineering is still in its infancy with many challenges, especially dealing with the diversity of quantum programming languages and hardware platforms.",
+        "evidence_strength": "Implicit anecdotal",
+        "strength_evidence": "However, quantum software engineering is still in its infancy with many challenges, especially dealing with the diversity of quantum programming languages and hardware platforms."
+      },
+      {
+        "statement": "The field is not yet reliable and must keep adapting to rapid changes in quantum hardware.",
+        "category": "Reliability",
+        "category_evidence": "As Quantum Software Engineering is still an emerging area of research with numerous challenges, there is a need for significant research effort to make it reliable and simultaneously adapt to rapid advances in quantum hardware.",
+        "evidence_strength": "Implicit anecdotal",
+        "strength_evidence": "As Quantum Software Engineering is still an emerging area of research with numerous challenges, there is a need for significant research effort to make it reliable and simultaneously adapt to rapid advances in quantum hardware."
+      },
+      {
+        "statement": "Heterogeneity across SDKs, languages, and connection methods makes it difficult for engineers to choose suitable technologies.",
+        "category": "Usability",
+        "category_evidence": "Besides, the variety of current quantum SDKs and the heterogeneous quantum technologies could confuse software engineers in picking an appropriate technique for their software.",
+        "evidence_strength": "Implicit anecdotal",
+        "strength_evidence": "Besides, the variety of current quantum SDKs and the heterogeneous quantum technologies could confuse software engineers in picking an appropriate technique for their software."
+      },
+      {
+        "statement": "Different SDKs and languages require different environments, syntax, and connection methods, creating interoperability difficulties.",
+        "category": "Interoperability",
+        "category_evidence": "Each SDK and language has different environment configuration requirements, syntax, and methods to connect with the quantum simulator or quantum computer.",
+        "evidence_strength": "Implicit anecdotal",
+        "strength_evidence": "Each SDK and language has different environment configuration requirements, syntax, and methods to connect with the quantum simulator or quantum computer."
+      },
+      {
+        "statement": "Quantum software engineering lacks widely accepted standards and lifecycle practices comparable to mature traditional software processes.",
+        "category": "Maintainability",
+        "category_evidence": "Additionally, there is no wellknown standardization or life cycle in quantum software engineering similar to practices like Agile and DevOps in the traditional realm [54].",
+        "evidence_strength": "Implicit anecdotal",
+        "strength_evidence": "Additionally, there is no wellknown standardization or life cycle in quantum software engineering similar to practices like Agile and DevOps in the traditional realm [54]."
+      },
+      {
+        "statement": "Regional limitations in access to quantum cloud services restrict which providers the framework can currently demonstrate.",
+        "category": "Access",
+        "category_evidence": "Due to the current limitation around access to quantum cloud services from our region, we are able to demonstrate the experiments with IBM Quantum and Amazon Braket at the moment.",
+        "evidence_strength": "Implicit anecdotal",
+        "strength_evidence": "Due to the current limitation around access to quantum cloud services from our region, we are able to demonstrate the experiments with IBM Quantum and Amazon Braket at the moment."
+      },
+      {
+        "statement": "The immaturity and lack of standardization in the field mean more work is needed to keep pace with growing quantum hardware capabilities.",
+        "category": "Maintainability",
+        "category_evidence": "Due to the immature development and lack of standardization, more efforts are still needed to advance this field and adapt to quantum hardware's continuous growth.",
+        "evidence_strength": "Implicit anecdotal",
+        "strength_evidence": "Due to the immature development and lack of standardization, more efforts are still needed to advance this field and adapt to quantum hardware's continuous growth."
+      },
+      {
+        "statement": "Waiting for remote quantum execution can be very long because of queueing, transpilation, and execution delays on NISQ-era cloud backends.",
+        "category": "Performance",
+        "category_evidence": "This waiting time at the quantum cloud provider could be very long (for queuing, transpiling, and executing) due to the current NISQ nature.",
+        "evidence_strength": "Implicit anecdotal",
+        "strength_evidence": "This waiting time at the quantum cloud provider could be very long (for queuing, transpiling, and executing) due to the current NISQ nature."
+      }
+    ]
+  },
+  "needs_review": false,
+  "validation_errors": []
+}

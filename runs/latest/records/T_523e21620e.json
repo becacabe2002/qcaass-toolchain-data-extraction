@@ -1,0 +1,245 @@
+{
+  "tool_id": "T_523e21620e",
+  "source_doc_path": ".\\data\\QuantumPath  A quantum software development platform (1).pdf",
+  "general": {
+    "tool_name": "QuantumPath",
+    "purpose": "QuantumPath is a quantum software development platform intended to support the design, implementation, and execution of quantum software applications. It is also described as supporting the management of quantum software development projects while remaining agnostic across quantum technologies.",
+    "source_type": {
+      "value": "CS",
+      "evidence": "Although it is not open-source software"
+    },
+    "contribution_type": {
+      "value": "Not stated",
+      "evidence": ""
+    }
+  },
+  "overview": {
+    "input_instruction": {
+      "value": "Multiple",
+      "evidence": "The circuit editor permits the graphical design of quantum gate circuits"
+    },
+    "output_type": {
+      "value": "QSC",
+      "evidence": "both the circuit editor and the annealing editor generate a proprietary metalanguage"
+    },
+    "automation_level": {
+      "value": "FA",
+      "evidence": "The corresponding metalanguage is then transpiled in design time to the programming language supported by each manufacturer and executed in the target environment."
+    },
+    "evaluation_type": {
+      "value": "IM",
+      "evidence": "QuantumPath has been tested in recent months by a limited number of customers, invited from the health and finance sectors."
+    }
+  },
+  "architecture": {
+    "design_principles": "The architecture is guided by principles including agnosticism, extensibility, integration, independency, optimisation, scalability, security, usability, and software-engineering support. It is presented as a platform to support both the development and execution of quantum software, including hybrid interconnection with classical systems.",
+    "technological_foundation": "The platform includes BoxFlows, WEBINARAnneal, a \"dwave_ExactSolver_simulator\", and a qSOA architecture. It also includes an enterprise backend and a telemetry system database, with AI-based support for platform selection.",
+    "orchestrator": {
+      "value": "Yes",
+      "evidence": "\"Flow\":\"BoxFlows\""
+    },
+    "manager_controller": {
+      "value": "Yes",
+      "evidence": "Thisbackendmanagestheapproved connectionsofquantumsimulatorsandquantumcomputerstosuppliers;"
+    },
+    "vendor_agnostic_layer": {
+      "value": "Yes",
+      "evidence": "Finally,wewouldliketohighlightanothersignificantissuewhendecidingonwhichcomputeritismoreconvenientto runaquantumprogram,astheydifferinefficiency,errortolerance,andcost,andmuchdependsonthetypeofalgorithm orcircuittobeexecuted."
+    },
+    "backend_integration": {
+      "value": "Yes",
+      "evidence": "Thisbackendmanagestheapproved connectionsofquantumsimulatorsandquantumcomputerstosuppliers;"
+    },
+    "debugging_testing": {
+      "value": "Not stated",
+      "evidence": ""
+    },
+    "simulation_support": {
+      "value": "Yes",
+      "evidence": "\"Device\":\"dwave_ExactSolver_simulator\""
+    },
+    "security_mechanisms": {
+      "value": "Yes",
+      "evidence": "A backend that - by design-contemplatessecurity,highavailability,loadbalancingandasynchronouscustomerprocessing."
+    },
+    "scalability_mechanisms": {
+      "value": "Yes",
+      "evidence": "A backend that - by design-contemplatessecurity,highavailability,loadbalancingandasynchronouscustomerprocessing."
+    },
+    "telemetry_monitoring": {
+      "value": "Yes",
+      "evidence": "Thisbackendmanagestheapproved connectionsofquantumsimulatorsandquantumcomputerstosuppliers;andwillalsocollectallthetelemetryfrom theprocess,"
+    },
+    "user_interface": {
+      "value": "Not stated",
+      "evidence": ""
+    }
+  },
+  "algorithms": {
+    "offers_algorithms": "No",
+    "overall_evidence": "\"walkingtheuserthroughtwoexamplesofquantum-gatesbasedcircuitdesignand annealing-basedoptimisation\"",
+    "algorithms": []
+  },
+  "challenges": {
+    "challenges": [
+      {
+        "statement": "Quantum computing has a steep learning curve due to the paradigm shift from classical computing.",
+        "category": "Usability",
+        "category_evidence": "we have to recognise that the learning curve of quantum computing is very pronounced.",
+        "evidence_strength": "Implicit anecdotal",
+        "strength_evidence": "we have to recognise that the learning curve of quantum computing is very pronounced."
+      },
+      {
+        "statement": "Quantum software platforms and toolkits are difficult to use in industry and provide limited context support for generating quantum algorithms.",
+        "category": "Usability",
+        "category_evidence": "Quantum software platforms and toolkits are difficult to use in industry.",
+        "evidence_strength": "Implicit anecdotal",
+        "strength_evidence": "they do not bring much context support to the generation of quantum algorithms."
+      },
+      {
+        "statement": "Version incompatibilities and discontinued features in integrated tools force modifications to the platform.",
+        "category": "Maintainability",
+        "category_evidence": "Several of the tools we have integrated into QuantumPath have been released in different versions (not always compatible with the previous ones), and some features have been discontinued - with the result that we have had to modify our platform.",
+        "evidence_strength": "Implicit anecdotal",
+        "strength_evidence": "with the result that we have had to modify our platform."
+      },
+      {
+        "statement": "Providing integrated design services for both gate-based quantum and annealing systems on the same platform is difficult.",
+        "category": "Interoperability",
+        "category_evidence": "Design services for both gate-based quantum and annealing systems have been difficult to offer on the same platform and in an integrated manner.",
+        "evidence_strength": "Implicit anecdotal",
+        "strength_evidence": "have been difficult to offer on the same platform and in an integrated manner."
+      },
+      {
+        "statement": "Annealing-system design needs a user-friendly interface beyond mathematical formula definitions to guide users and prevent errors.",
+        "category": "Usability",
+        "category_evidence": "it is essential to offer a user-friendly interface beyond the definitions of the mathematical formulae, which can guide the user and control possible errors.",
+        "evidence_strength": "Implicit anecdotal",
+        "strength_evidence": "we believe that it is essential to offer a user-friendly interface beyond the definitions of the mathematical formulae, which can guide the user and control possible errors."
+      }
+    ]
+  },
+  "needs_review": true,
+  "validation_errors": [
+    {
+      "field_path": "overview.output_type",
+      "value": "QSC",
+      "quote": "both the circuit editor and the annealing editor generate a proprietary metalanguage",
+      "reason": "quote not found verbatim in source"
+    },
+    {
+      "field_path": "overview.automation_level",
+      "value": "FA",
+      "quote": "The corresponding metalanguage is then transpiled in design time to the programming language supported by each manufacturer and executed in the target environment.",
+      "reason": "quote not found verbatim in source"
+    },
+    {
+      "field_path": "overview.evaluation_type",
+      "value": "IM",
+      "quote": "QuantumPath has been tested in recent months by a limited number of customers, invited from the health and finance sectors.",
+      "reason": "quote not found verbatim in source"
+    },
+    {
+      "field_path": "architecture.orchestrator",
+      "value": "Yes",
+      "quote": "\"Flow\":\"BoxFlows\"",
+      "reason": "quote shorter than 4 words"
+    },
+    {
+      "field_path": "architecture.manager_controller",
+      "value": "Yes",
+      "quote": "Thisbackendmanagestheapproved connectionsofquantumsimulatorsandquantumcomputerstosuppliers;",
+      "reason": "quote shorter than 4 words"
+    },
+    {
+      "field_path": "architecture.vendor_agnostic_layer",
+      "value": "Yes",
+      "quote": "Finally,wewouldliketohighlightanothersignificantissuewhendecidingonwhichcomputeritismoreconvenientto runaquantumprogram,astheydifferinefficiency,errortolerance,andcost,andmuchdependsonthetypeofalgorithm orcircuittobeexecuted.",
+      "reason": "quote shorter than 4 words"
+    },
+    {
+      "field_path": "architecture.backend_integration",
+      "value": "Yes",
+      "quote": "Thisbackendmanagestheapproved connectionsofquantumsimulatorsandquantumcomputerstosuppliers;",
+      "reason": "quote shorter than 4 words"
+    },
+    {
+      "field_path": "architecture.simulation_support",
+      "value": "Yes",
+      "quote": "\"Device\":\"dwave_ExactSolver_simulator\"",
+      "reason": "quote shorter than 4 words"
+    },
+    {
+      "field_path": "architecture.telemetry_monitoring",
+      "value": "Yes",
+      "quote": "Thisbackendmanagestheapproved connectionsofquantumsimulatorsandquantumcomputerstosuppliers;andwillalsocollectallthetelemetryfrom theprocess,",
+      "reason": "quote shorter than 4 words"
+    },
+    {
+      "field_path": "algorithms.overall_evidence",
+      "value": "No",
+      "quote": "\"walkingtheuserthroughtwoexamplesofquantum-gatesbasedcircuitdesignand annealing-basedoptimisation\"",
+      "reason": "quote shorter than 4 words"
+    },
+    {
+      "field_path": "challenges.challenges[0].category_evidence",
+      "value": "Usability",
+      "quote": "we have to recognise that the learning curve of quantum computing is very pronounced.",
+      "reason": "quote not found verbatim in source"
+    },
+    {
+      "field_path": "challenges.challenges[0].strength_evidence",
+      "value": "Implicit anecdotal",
+      "quote": "we have to recognise that the learning curve of quantum computing is very pronounced.",
+      "reason": "quote not found verbatim in source"
+    },
+    {
+      "field_path": "challenges.challenges[1].category_evidence",
+      "value": "Usability",
+      "quote": "Quantum software platforms and toolkits are difficult to use in industry.",
+      "reason": "quote not found verbatim in source"
+    },
+    {
+      "field_path": "challenges.challenges[1].strength_evidence",
+      "value": "Implicit anecdotal",
+      "quote": "they do not bring much context support to the generation of quantum algorithms.",
+      "reason": "quote not found verbatim in source"
+    },
+    {
+      "field_path": "challenges.challenges[2].category_evidence",
+      "value": "Maintainability",
+      "quote": "Several of the tools we have integrated into QuantumPath have been released in different versions (not always compatible with the previous ones), and some features have been discontinued - with the result that we have had to modify our platform.",
+      "reason": "quote not found verbatim in source"
+    },
+    {
+      "field_path": "challenges.challenges[2].strength_evidence",
+      "value": "Implicit anecdotal",
+      "quote": "with the result that we have had to modify our platform.",
+      "reason": "quote not found verbatim in source"
+    },
+    {
+      "field_path": "challenges.challenges[3].category_evidence",
+      "value": "Interoperability",
+      "quote": "Design services for both gate-based quantum and annealing systems have been difficult to offer on the same platform and in an integrated manner.",
+      "reason": "quote not found verbatim in source"
+    },
+    {
+      "field_path": "challenges.challenges[3].strength_evidence",
+      "value": "Implicit anecdotal",
+      "quote": "have been difficult to offer on the same platform and in an integrated manner.",
+      "reason": "quote not found verbatim in source"
+    },
+    {
+      "field_path": "challenges.challenges[4].category_evidence",
+      "value": "Usability",
+      "quote": "it is essential to offer a user-friendly interface beyond the definitions of the mathematical formulae, which can guide the user and control possible errors.",
+      "reason": "quote not found verbatim in source"
+    },
+    {
+      "field_path": "challenges.challenges[4].strength_evidence",
+      "value": "Implicit anecdotal",
+      "quote": "we believe that it is essential to offer a user-friendly interface beyond the definitions of the mathematical formulae, which can guide the user and control possible errors.",
+      "reason": "quote not found verbatim in source"
+    }
+  ]
+}

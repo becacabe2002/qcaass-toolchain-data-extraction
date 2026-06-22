@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from qcaass_extraction.reanchor import reanchor
+from qcaass_extraction.locate import reanchor
 
 CANON_A = "It provides an orchestrator that schedules circuits across backends."
 CANON_B = "Qubitron offers a built-in implementation of the Grover search algorithm."

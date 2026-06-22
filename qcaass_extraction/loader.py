@@ -1,13 +1,25 @@
-"""Document loading + canonicalization (Section 5 `load_doc`)."""
+"""Document loading, canonicalization, and stable document IDs."""
 
 from __future__ import annotations
 
+import hashlib
 import os
 import re
 
 from .config import CATEGORIES, SHORT_DOC_TOKEN_THRESHOLD
 from .normalize import canonicalize
 from .state import ExtractionState
+
+_HASH_LEN = 10
+
+
+def tool_id(path: str) -> str:
+    """Return a stable ``T_<sha1[:10]>`` id derived from the file's bytes."""
+    h = hashlib.sha1()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(65536), b""):
+            h.update(chunk)
+    return f"T_{h.hexdigest()[:_HASH_LEN]}"
 
 # Approx. paragraph window size (chars) when regrouping sentences. A few
 # sentences per span keeps anchored slices small enough to save strong-model

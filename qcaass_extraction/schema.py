@@ -33,12 +33,20 @@ class ContributionTypeField(BaseModel):
 
 
 class InputInstructionField(BaseModel):
-    value: Literal["HL", "QI", "MV", "Multiple", "Not stated"]
+    value: str = Field(
+        description="HL | QI | MV | Multiple (types) | Not stated. "
+        "When more than one applies, list the specific types, "
+        'e.g. "Multiple (HL, QI)".'
+    )
     evidence: str = ""
 
 
 class OutputTypeField(BaseModel):
-    value: Literal["QSC", "SF", "Metrics", "Logs", "Multiple", "Not stated"]
+    value: str = Field(
+        description="QSC | SF | Metrics | Logs | Multiple (types) | Not stated. "
+        "When more than one applies, list the specific types, "
+        'e.g. "Multiple (QSC, Metrics)".'
+    )
     evidence: str = ""
 
 

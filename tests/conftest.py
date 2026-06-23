@@ -20,6 +20,7 @@ from qcaass_extraction.schema import (
     EvaluationTypeField,
     InputInstructionField,
     OutputTypeField,
+    TypedEvidence,
     empty_architecture,
 )
 
@@ -56,11 +57,21 @@ def sample_record() -> ToolRecord:
         overview=OverviewCharacteristics(
             input_instruction=InputInstructionField(
                 value="HL",
-                evidence="The tool exposes a high-level instruction interface and emits metrics.",
+                type_evidence=[
+                    TypedEvidence(
+                        type="HL",
+                        evidence="The tool exposes a high-level instruction interface and emits metrics.",
+                    )
+                ],
             ),
             output_type=OutputTypeField(
                 value="Metrics",
-                evidence="The tool exposes a high-level instruction interface and emits metrics.",
+                type_evidence=[
+                    TypedEvidence(
+                        type="Metrics",
+                        evidence="The tool exposes a high-level instruction interface and emits metrics.",
+                    )
+                ],
             ),
             automation_level=AutomationLevelField(value="Not stated"),
             evaluation_type=EvaluationTypeField(value="Not stated"),

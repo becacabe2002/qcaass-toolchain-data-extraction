@@ -32,13 +32,27 @@ class ContributionTypeField(BaseModel):
     evidence: str = ""
 
 
+class TypedEvidence(BaseModel):
+    """One coded type paired with its own verbatim supporting quote.
+
+    Used for fields that may carry several codes at once (input/output). Each
+    code travels with the quote that justifies it, so 'Multiple' values stay
+    traceable per type instead of sharing one blanket quote.
+    """
+
+    type: str  # e.g. "HL", "QI", "MV" (input) or "QSC", "SF", "Metrics", "Logs"
+    evidence: str = ""  # verbatim quote supporting THIS type only
+
+
 class InputInstructionField(BaseModel):
     value: str = Field(
         description="HL | QI | MV | Multiple (types) | Not stated. "
         "When more than one applies, list the specific types, "
         'e.g. "Multiple (HL, QI)".'
     )
-    evidence: str = ""
+    # One entry per code in `value` (empty only when Not stated). Even a
+    # single-type value carries its quote here; there is no separate `evidence`.
+    type_evidence: list[TypedEvidence] = Field(default_factory=list)
 
 
 class OutputTypeField(BaseModel):
@@ -47,7 +61,9 @@ class OutputTypeField(BaseModel):
         "When more than one applies, list the specific types, "
         'e.g. "Multiple (QSC, Metrics)".'
     )
-    evidence: str = ""
+    # One entry per code in `value` (empty only when Not stated). Even a
+    # single-type value carries its quote here; there is no separate `evidence`.
+    type_evidence: list[TypedEvidence] = Field(default_factory=list)
 
 
 class AutomationLevelField(BaseModel):

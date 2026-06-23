@@ -9,8 +9,21 @@ from __future__ import annotations
 import os
 
 import pandas as pd
+from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 
 from .schema import ARCHITECTURE_COMPONENTS, ToolRecord
+
+
+def _clean(value):
+    """Strip control characters openpyxl refuses to write to a worksheet."""
+    if isinstance(value, str):
+        return ILLEGAL_CHARACTERS_RE.sub("", value)
+    return value
+
+
+def _render_type_evidence(field) -> str:
+    """Flatten per-type evidence into one cell: 'HL: quote | QI: quote'."""
+    return " | ".join(f"{te.type}: {te.evidence}" for te in field.type_evidence)
 
 
 def flatten_tool_row(r: ToolRecord) -> dict:
@@ -26,9 +39,9 @@ def flatten_tool_row(r: ToolRecord) -> dict:
         "contribution_type_value": g.contribution_type.value,
         "contribution_type_evidence": g.contribution_type.evidence,
         "input_instruction_value": o.input_instruction.value,
-        "input_instruction_evidence": o.input_instruction.evidence,
+        "input_instruction_evidence": _render_type_evidence(o.input_instruction),
         "output_type_value": o.output_type.value,
-        "output_type_evidence": o.output_type.evidence,
+        "output_type_evidence": _render_type_evidence(o.output_type),
         "automation_level_value": o.automation_level.value,
         "automation_level_evidence": o.automation_level.evidence,
         "evaluation_type_value": o.evaluation_type.value,
@@ -108,7 +121,8 @@ _ERROR_COLUMNS = ["tool_id", "field_path", "value", "quote", "reason"]
 
 
 def _frame(rows: list[dict], columns: list[str]) -> pd.DataFrame:
-    return pd.DataFrame(rows, columns=columns)
+    cleaned = [{k: _clean(v) for k, v in row.items()} for row in rows]
+    return pd.DataFrame(cleaned, columns=columns)
 
 
 def write_workbook(records: list[ToolRecord], path: str) -> None:

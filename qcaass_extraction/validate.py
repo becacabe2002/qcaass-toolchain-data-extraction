@@ -57,12 +57,32 @@ def collect_evidence_fields(
         )
 
     if overview is not None:
-        for name in ("input_instruction", "output_type", "automation_level",
-                     "evaluation_type"):
+        # Single-quote coded fields.
+        for name in ("automation_level", "evaluation_type"):
             f = getattr(overview, name)
             fields.append(
                 EvidenceField(f"overview.{name}", f.value, f.evidence, "overview")
             )
+        # Per-type-evidence fields: one quote per code carried in `value`.
+        for name in ("input_instruction", "output_type"):
+            f = getattr(overview, name)
+            if f.value == NOT_STATED:
+                # Legitimate empty: coded "Not stated" with no quotes.
+                fields.append(
+                    EvidenceField(f"overview.{name}", f.value, "", "overview")
+                )
+            elif not f.type_evidence:
+                # A real code with no per-type evidence at all -> error.
+                fields.append(
+                    EvidenceField(f"overview.{name}", f.value, "", "overview",
+                                  coded=False)
+                )
+            else:
+                for te in f.type_evidence:
+                    fields.append(
+                        EvidenceField(f"overview.{name}.{te.type}", te.type,
+                                      te.evidence, "overview", coded=False)
+                    )
 
     if architecture is not None:
         from .schema import ARCHITECTURE_COMPONENTS

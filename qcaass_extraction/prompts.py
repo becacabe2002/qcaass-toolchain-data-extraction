@@ -15,7 +15,13 @@ brevity here is important to avoid truncating your own output.
 
 Categories:
 - general:        tool name, purpose, source type (open/closed), contribution type
-- overview:       input instruction type, output type, automation level, evaluation
+- overview:       capture a SEPARATE snippet for EACH distinct input mode
+                  (high-level API/code, raw circuits/gates, math/symbolic
+                  variables) AND for EACH distinct output kind (source
+                  code/IR, simulation/measurement results, performance
+                  metrics, logs), plus automation level and evaluation. If the
+                  tool supports several input or output kinds, do not stop at
+                  the first — find a snippet for every one.
 - architecture:   design principles, languages/tech, components (orchestrator,
                   manager, abstraction layer, backends, debugging, simulation,
                   security, scalability, telemetry, UI)
@@ -79,7 +85,12 @@ CATEGORY_INSTRUCTIONS = {
         "- MV: symbolic or algebraic / mathematical-variable inputs.\n"
         "- When more than one of the above is explicitly supported, set value to "
         "'Multiple (X, Y)' listing the specific types that apply, "
-        "e.g. 'Multiple (HL, QI)'.\n\n"
+        "e.g. 'Multiple (HL, QI)'.\n"
+        "- Evidence goes in type_evidence: add ONE entry per code in value, each "
+        "with that code's `type` (HL/QI/MV) and a verbatim quote supporting THAT "
+        "type alone. The types in type_evidence must exactly match the codes in "
+        "value. A single quote covering only one type is NOT enough to assign "
+        "Multiple. For Not stated, leave type_evidence empty.\n\n"
         "output_type (QSC / SF / Metrics / Logs / Multiple (types) / Not stated):\n"
         "- QSC: quantum source code or intermediate representation produced.\n"
         "- SF: execution/simulation results (measurement outcomes, distributions).\n"
@@ -88,7 +99,12 @@ CATEGORY_INSTRUCTIONS = {
         "- When several output kinds are stated, set value to 'Multiple (X, Y)' "
         "listing the specific types that apply, e.g. 'Multiple (QSC, Metrics)'. "
         "Code regardless of whether exposed to the end user through the workflow "
-        "interface.\n\n"
+        "interface.\n"
+        "- Evidence goes in type_evidence: add ONE entry per code in value, each "
+        "with that code's `type` (QSC/SF/Metrics/Logs) and a verbatim quote "
+        "supporting THAT type alone. The types in type_evidence must exactly "
+        "match the codes in value. A single quote covering only one type is NOT "
+        "enough to assign Multiple. For Not stated, leave type_evidence empty.\n\n"
         "automation_level (FA / SA / NA / Not stated): judged on the CORE "
         "operational workflow.\n"
         "- FA: the workflow executes without human intervention. Human work "

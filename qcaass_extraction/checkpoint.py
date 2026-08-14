@@ -1,14 +1,3 @@
-"""Per-document checkpoint store + run manifest.
-
-At 174 files a single end-of-run workbook write means a crash at doc 170 loses
-every record and all the API spend behind it. Instead each finished document is
-persisted immediately as its own JSON file, and every attempt is appended to a
-manifest. A rerun reads the store to skip finished docs (resume) and rebuilds
-the workbook from whatever is on disk, so a partial run still yields output.
-
-Writes are atomic (temp file + ``os.replace``), matching the workbook's swap.
-"""
-
 from __future__ import annotations
 
 import json

@@ -25,10 +25,10 @@ Two non-negotiable properties:
 
 ```
 ┌──────────┐   ┌────────────┐   ┌──────────┐   ┌──────────────┐   ┌──────────┐   ┌──────────────────┐   ┌──────────┐
-│ load_doc │ → │locate_spans│ → │ reanchor │ → │extract_merged│ → │ validate │ → │ fallback (if err) │ → │ assemble │
+│ load_doc │ → │locate_spans│ → │ reanchor │ → │extract_merged│ → │ validate │ → │ fallback (if err)│ → │ assemble │
 │          │   │  (flash)   │   │ (det.)   │   │   (strong)   │   │  (det.)  │   │ (strong, ≤1/cat) │   │ (record) │
 └──────────┘   └────────────┘   └──────────┘   └──────────────┘   └────┬─────┘   └──────────────────┘   └──────────┘
-                                                                         │
+                                                                       │
                                                                     retry on
                                                                validation errors
                                                                     (loop back

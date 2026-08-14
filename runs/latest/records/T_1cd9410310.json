@@ -3,10 +3,10 @@
   "source_doc_path": ".\\data\\iQuantum _ A toolkit for modeling and simulation of quantum computing environments.pdf",
   "general": {
     "tool_name": "iQuantum",
-    "purpose": "The tool is a versatile and lightweight simulation framework designed to model quantum computing environments and support quantum software and system research, with a focus on resource management and orchestration. It aims to address the lack of a standard simulator for reproducing experiments and comparing algorithm or application performance.",
+    "purpose": "iQuantum is an open-source toolkit for modeling and simulation in hybrid quantum computing environments, aimed at designing and evaluating quantum resource management policies. It provides an environment for prototyping, problem formulation, and empirical evaluation of policies such as scheduling, backend selection, hybrid task offloading, and orchestration.",
     "source_type": {
-      "value": "Not stated",
-      "evidence": ""
+      "value": "OS",
+      "evidence": "Besides, as an open-source toolkit, iQuantum is designed to enhance and collaborate with other tools in the quantumsoftware ecosystem, specifically in the areas of quantum environment modeling and simulation."
     },
     "contribution_type": {
       "value": "Not stated",
@@ -15,40 +15,58 @@
   },
   "overview": {
     "input_instruction": {
-      "value": "Multiple",
-      "evidence": "itprovidessupportfor externaldatasets,accommodatingbothOpenQASMfilesforquantumtasksandquantumcomputercalibrationdatafor quantumsystems."
+      "value": "Multiple (QI, MV)",
+      "type_evidence": [
+        {
+          "type": "QI",
+          "evidence": "For instance, it provides support forexternal datasets, accommodating both OpenQASM files for quantum tasks and quantum computer calibration data forquantum systems."
+        },
+        {
+          "type": "MV",
+          "evidence": "For instance, it provides support forexternal datasets, accommodating both OpenQASM files for quantum tasks and quantum computer calibration data forquantum systems."
+        }
+      ]
     },
     "output_type": {
-      "value": "Multiple",
-      "evidence": "OurtoolkitalsofacilitatesdataimportingandexportinginacommonCSVformat, enablingfurther investigationandanalysis."
+      "value": "Multiple (SF, Logs)",
+      "type_evidence": [
+        {
+          "type": "SF",
+          "evidence": "Finally, when the simulation stop condition is met, the simulation will be terminated, and the outcome willbe generated in CSV format for further analysis."
+        },
+        {
+          "type": "Logs",
+          "evidence": "The simulator shows all events (with timestamps) happening during the simulation period (Code 6)."
+        }
+      ]
     },
     "automation_level": {
-      "value": "Not stated",
-      "evidence": ""
+      "value": "SA",
+      "evidence": "First, the user needs to define the scenario manually or automatically using the dataset generator and importer."
     },
     "evaluation_type": {
       "value": "EX",
-      "evidence": "WevalidateandevaluateiQuantumindifferentscenariosusingtrustworthydatasets,includingIBMQuantum 13 calibration data for quantum systems and the MQT Bench dataset34 for the workload."
+      "evidence": "Through rigorous empirical validation and evaluations using large-scale quantum workload datasets, we demonstrate the flexibility and applicability of our toolkit in various use cases."
     }
   },
   "architecture": {
-    "design_principles": "The architecture is described as a layered, modular design that was extensively refactored and extended to support both quantum and hybrid quantum-classical simulation. It is intended to model, simulate, and evaluate resource management strategies in cloud-edge hybrid quantum environments using a discrete-event simulation approach.",
-    "technological_foundation": "The implementation is based on the CloudSim toolkit and uses a discrete-event simulation approach. It also mentions compatibility with Python-Java brokers such as Py4J for integrating machine learning-based policies.",
+    "design_principles": "Discrete-event simulation approach; improved layered design for hybrid quantum-classical environments; modular architecture with five main layers; high-level simulation focused on operational aspects rather than direct quantum physical simulation; integration with external quantum SDKs for circuit features.",
+    "technological_foundation": "CloudSim toolkit; Qiskit; Python-Java brokers such as Py4J; CloudSim/iFogSim; OpenQASM; CSV.",
     "orchestrator": {
       "value": "Yes",
-      "evidence": "iQuantumisdesignedwithamodulararchitecturethatcomprisesfivemainlayers:coresimulation,physical,logical, middleware, and resource management."
+      "evidence": "iQuantum provides a versatileenvironment for designing and evaluating quantum resource management policies such as quantum task scheduling, backend selection, hybrid task offloading, and orchestration in the quantum cloud-edge continuum."
     },
     "manager_controller": {
       "value": "Yes",
-      "evidence": "All elements in these layers are implemented to demonstrate the functionality and usefulness of our toolkit in modeling, simulating, and evaluating resource management strategies for hybrid quantum-classicalcomputinginthecloud-edgecontinuum."
+      "evidence": "In iQuantum, a gateway (cloud or edge gate-way) is a communication interface between data center brokers and the layer below. It receives incoming tasks, classifiesthem, and dispatches them to the appropriate broker for further scheduling."
     },
     "vendor_agnostic_layer": {
-      "value": "Not stated",
-      "evidence": ""
+      "value": "Yes",
+      "evidence": "Eventually, iQuantum serves as the unified toolkit forsupporting the hybrid quantum-classical computing paradigm in the edge-cloud continuum, which enhances the seam-lessly and simplicity of employing different frameworks and paves a new way for research in system design and resourcemanagement for various scenarios, such as quantum computing and hybrid quantum-classical computing environments."
     },
     "backend_integration": {
       "value": "Yes",
-      "evidence": "iQuantum'scompatibilitywithPython-Javabrokers,suchasPy4J, * allowsforstraightforwardintegrationof machine learning-based policies."
+      "evidence": "Furthermore, iQuantum can be seamlessly integrated with common quantum SDKs like Qiskit,46 enabling workload feature extraction and dataset generation."
     },
     "debugging_testing": {
       "value": "Not stated",
@@ -56,7 +74,7 @@
     },
     "simulation_support": {
       "value": "Yes",
-      "evidence": "WedevelopediQuantumusingthe discrete-eventsimulationapproach,leveragingthecorecomponentsoftheCloudSim toolkit."
+      "evidence": "We developed iQuantum using the discrete-event simulation approach, leveraging the core components of the CloudSimtoolkit."
     },
     "security_mechanisms": {
       "value": "Not stated",
@@ -67,87 +85,37 @@
       "evidence": ""
     },
     "telemetry_monitoring": {
-      "value": "Not stated",
-      "evidence": ""
+      "value": "Yes",
+      "evidence": "Figure 11 illustrates the peak memory (RAM) usage and average simulation time (wall-lock time) of all scenarios ondifferent workload datasets measured by using time command in Ubuntu."
     },
     "user_interface": {
-      "value": "Not stated",
-      "evidence": ""
+      "value": "Yes",
+      "evidence": "First, the user needs to define the scenario manually or automatically using the dataset generator and importer."
     }
   },
   "algorithms": {
     "offers_algorithms": "No",
-    "overall_evidence": "For modeling large-scale quantum task workloads, we used MQT Bench34 and extracted features of quantum circuits for 28differentquantumalgorithms",
+    "overall_evidence": "To facilitate the verification, we use four QTasks that represent different quantum applications extracted from theMQT Bench dataset,34 in which the circuit attributes are shown in Table 3.",
     "algorithms": []
   },
   "challenges": {
     "challenges": [
       {
-        "statement": "The framework does not directly simulate quantum physical phenomena such as superposition and entanglement, limiting it to a high-level abstract simulation of operational aspects.",
-        "category": "Reliability",
-        "category_evidence": "iQuantum's design does not include the direct simulation of quantum physical phenomena such as superposition and entanglement.",
-        "evidence_strength": "Implicit anecdotal",
-        "strength_evidence": "This decision aligns with our framework's objective to provide a high-level simulation environment primarily concerned with the operational aspects of quantum computing environments."
-      },
-      {
-        "statement": "Resource provisioning policies are mainly focused on classical resources because quantum resource virtualization or partitioning is not yet mature.",
-        "category": "Scalability",
-        "category_evidence": "It is important to note that resource provisioning policies are mainly for classical resources, as quantum resource virtualization or partitioning is not yet mature.",
-        "evidence_strength": "Implicit anecdotal",
-        "strength_evidence": "It is important to note that resource provisioning policies are mainly for classical resources, as quantum resource virtualization or partitioning is not yet mature."
-      },
-      {
-        "statement": "Circuit depth is only an approximate metric, and a more precise method is recommended for extracting the number of circuit layers when measuring CLOPS for quantum nodes.",
+        "statement": "iQuantum does not directly simulate quantum physical phenomena such as superposition and entanglement, limiting it to high-level operational simulation.",
         "category": "Performance",
-        "category_evidence": "However, it is important to note that circuit depth is only an approximate metric, and we recommend using a more precise method to extract the number of circuit layers in quantum tasks to adapt to the measurement of the CLOPS metric for quantum nodes.",
+        "category_evidence": "iQuantum's design does not include the direct simulation of quantum physical phenomena such assuperposition and entanglement.",
         "evidence_strength": "Implicit anecdotal",
-        "strength_evidence": "However, it is important to note that circuit depth is only an approximate metric, and we recommend using a more precise method to extract the number of circuit layers in quantum tasks to adapt to the measurement of the CLOPS metric for quantum nodes."
+        "strength_evidence": "This decision aligns with our framework's objective to provide a high-level simulationenvironment primarily concerned with the operational aspects of quantum computing environments."
+      },
+      {
+        "statement": "Parallel execution of multiple quantum tasks across different qubit-topology regions is anticipated for the future but is currently difficult to realize in the NISQ era due to noise and qubit reset complexity.",
+        "category": "Scalability",
+        "category_evidence": "In the future, we anticipate that multiple quantum tasks canbe parallel executed in different areas of the qubit topology in a quantum computer.",
+        "evidence_strength": "Implicit anecdotal",
+        "strength_evidence": "However, it is challenging to realizethis approach in the current NISQ era20 as it can be affected by noise and complicated qubit reset control."
       }
     ]
   },
-  "needs_review": true,
-  "validation_errors": [
-    {
-      "field_path": "overview.input_instruction",
-      "value": "Multiple",
-      "quote": "itprovidessupportfor externaldatasets,accommodatingbothOpenQASMfilesforquantumtasksandquantumcomputercalibrationdatafor quantumsystems.",
-      "reason": "quote shorter than 4 words"
-    },
-    {
-      "field_path": "overview.output_type",
-      "value": "Multiple",
-      "quote": "OurtoolkitalsofacilitatesdataimportingandexportinginacommonCSVformat, enablingfurther investigationandanalysis.",
-      "reason": "quote shorter than 4 words"
-    },
-    {
-      "field_path": "architecture.simulation_support",
-      "value": "Yes",
-      "quote": "WedevelopediQuantumusingthe discrete-eventsimulationapproach,leveragingthecorecomponentsoftheCloudSim toolkit.",
-      "reason": "quote shorter than 4 words"
-    },
-    {
-      "field_path": "challenges.challenges[0].category_evidence",
-      "value": "Reliability",
-      "quote": "iQuantum's design does not include the direct simulation of quantum physical phenomena such as superposition and entanglement.",
-      "reason": "quote not found verbatim in source"
-    },
-    {
-      "field_path": "challenges.challenges[0].strength_evidence",
-      "value": "Implicit anecdotal",
-      "quote": "This decision aligns with our framework's objective to provide a high-level simulation environment primarily concerned with the operational aspects of quantum computing environments.",
-      "reason": "quote not found verbatim in source"
-    },
-    {
-      "field_path": "challenges.challenges[1].category_evidence",
-      "value": "Scalability",
-      "quote": "It is important to note that resource provisioning policies are mainly for classical resources, as quantum resource virtualization or partitioning is not yet mature.",
-      "reason": "quote not found verbatim in source"
-    },
-    {
-      "field_path": "challenges.challenges[1].strength_evidence",
-      "value": "Implicit anecdotal",
-      "quote": "It is important to note that resource provisioning policies are mainly for classical resources, as quantum resource virtualization or partitioning is not yet mature.",
-      "reason": "quote not found verbatim in source"
-    }
-  ]
+  "needs_review": false,
+  "validation_errors": []
 }

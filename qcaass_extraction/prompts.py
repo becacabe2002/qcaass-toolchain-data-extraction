@@ -13,6 +13,11 @@ back whole paragraphs — a single distinctive sentence or clause is enough. A
 downstream step re-expands each snippet to its full surrounding context, so
 brevity here is important to avoid truncating your own output.
 
+A single passage may be relevant to more than one category — if so, include
+it (or a snippet from it) under EVERY category it plausibly supports. Do NOT
+force a passage into a single "best" category; under-including a passage in a
+category that needs it is worse than over-including it.
+
 Categories:
 - general:        tool name, purpose, source type (open/closed), contribution type
 - overview:       capture a SEPARATE snippet for EACH distinct input mode

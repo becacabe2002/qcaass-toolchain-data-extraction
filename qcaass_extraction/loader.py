@@ -25,7 +25,7 @@ def tool_id(path: str) -> str:
 # sentences per span keeps anchored slices small enough to save strong-model
 # tokens while preserving local context.
 _PARA_WINDOW_CHARS = 400
-_SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
+_SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z])")
 
 # Below this many words of extracted text a document is treated as a failed
 # load (likely a scanned/image-only PDF or a corrupt file) rather than fed to
